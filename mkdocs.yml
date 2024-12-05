@@ -1,0 +1,20 @@
+site_name: MatrixDL文档
+site_url: http://SysuMatrixDL.github.io/doc
+theme:
+  name: material
+  language: zh
+  logo: assets/icon-light.png
+  favicon: assets/icon-light.png
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
