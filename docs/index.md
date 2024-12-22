@@ -16,7 +16,33 @@ MatrixDL致力于提供简单易用的云端算力，为用户的炼丹保驾护
 - 提供实时展示设备状态的grafana仪表盘
 - 容器间共享的常用数据集，如ImageNet, ucf101等
 
-### 访问 MatrixDL
+## 开源
+
+MatrixDL完全开源，所有开发仓库位于 [SysuMatrixDL](https://github.com/SysuMatrixDL) 组织下，若干仓库如下：
+
+- [doc](https://github.com/SysuMatrixDL/doc) 本文档的仓库
+
+- [deploy](https://github.com/SysuMatrixDL/deploy) 控制节点的部署
+
+- [worker](https://github.com/SysuMatrixDL/worker) 工作节点的部署
+
+- [backend](https://github.com/SysuMatrixDL/backend) 后端控制器实现及 API 封装
+
+- [frontend](https://github.com/SysuMatrixDL/frontend) 前端实现
+
+[frontend](https://github.com/SysuMatrixDL/frontend) 和 [backend](https://github.com/SysuMatrixDL/backend) 均使用 github actions 自动化打包上传镜像到 ghcr.io/sysumatrixdl 下。它们的镜像发布为:
+
+- ghcr.io/sysumatrixdl/frontend
+
+- ghcr.io/sysumatrixdl/backend
+
+开发和部署中还需要两个镜像为:
+
+- ghcr.io/sysumatrixdl/opengauss
+
+- ghcr.io/sysumatrixdl/grafana
+
+## 访问 MatrixDL
 
 借助cloudflare的内网穿透服务，可以通过 [https://matrixdl.fuusen.space/](https://matrixdl.fuusen.space/) 访问MatrixDL。
 
