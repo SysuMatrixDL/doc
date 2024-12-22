@@ -8,6 +8,14 @@ SysuMatrixDL (Sysu Matrix Deep Learning) 是一个分布式算力市场平台
 
 为什么要开发这个项目？ <del>为了提交数据库大作业，</del> 考虑到当下GPU算力在人工智能训练和推理中的作用日益重要，已经成为广大学生的刚需，本项目的灵感来自于GPU算力租用平台AutoDL，旨在给中大学生提供CPU/GPU算力(免费)租用服务。
 
+MatrixDL致力于提供简单易用的云端算力，为用户的炼丹保驾护航：
+
+- 提供预装cuda、pytorch的镜像，环境配置便捷
+- 提供jupyter、ssh等多种容器访问方式
+- 支持tensorboard端口转发
+- 提供实时展示设备状态的grafana仪表盘
+- 容器间共享的常用数据集，如ImageNet, ucf101等
+
 ### 访问 MatrixDL
 
 借助cloudflare的内网穿透服务，可以通过 [https://matrixdl.fuusen.space/](https://matrixdl.fuusen.space/) 访问MatrixDL。

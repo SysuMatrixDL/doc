@@ -45,5 +45,6 @@ nav:
   - 细节:
     - 容器镜像控制: details/index.md
     - RestfulAPI: details/restful.md
+    - grafana实现: details/grafana.md
 
 

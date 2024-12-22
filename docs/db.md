@@ -211,6 +211,8 @@ print(res)
 
 每个工作结点上都部署有open-gauss数据库，用于记录该节点的实时资源使用状态
 
+![alt text](assets/details/grafana1.png)
+
 ### gauge 表
 
 用于记录设备的综合监控指标，包括CPU、内存、GPU负载及GPU内存的使用情况。

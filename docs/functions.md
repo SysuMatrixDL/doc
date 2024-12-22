@@ -75,6 +75,8 @@
 
 点击访问Grafana，访问用户友好的仪表盘，展示容器所在物理机的实时状态
 
+使用grafana的好处是界面美观、可互动性强。除此之外，得益于数据库的加持，用户可以查询任意指定时间的设备状态
+
 ![alt text](assets/functions/grafana.png)
 
 ### ssh
