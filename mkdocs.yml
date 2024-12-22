@@ -34,14 +34,14 @@ nav:
   - 主页: index.md 
   - 功能界面: functions.md
   - 数据库: db.md
-  - 部署:
-    - deploy/index.md
-    - 控制节点: deploy/controller.md
-    - 工作节点: deploy/worker.md
+  # - 部署:
+  #   - deploy/index.md
+  #   - 控制节点: deploy/controller.md
+  #   - 工作节点: deploy/worker.md
   - 开发:
     - dev/index.md
     - 前端: dev/frontend.md
-    - 后端: dev/backend.md
+    # - 后端: dev/backend.md
   - 细节:
     - 容器镜像控制: details/index.md
     - RestfulAPI: details/restful.md
