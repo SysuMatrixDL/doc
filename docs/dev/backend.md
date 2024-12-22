@@ -1,4 +1,4 @@
-# 后端控制器实现
+# 后端控制器
 
 ## 脚本列表
 
@@ -34,8 +34,6 @@ cid是容器编号,iid是镜像编号,gid是gpu编号,did是设备编号，uid�
 | --- | --- |
 | get_devices.py | 获取当前所有设备的did |
 |  |  |
-
-## RESTful API
 
 ## RESTful API
 
