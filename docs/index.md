@@ -71,3 +71,9 @@ MatrixDL由单个控制结点(controller)和多个工作结点(worker)组成，�
 为了便于用户了解工作结点的运行状态，每个工作结点上都运行有一个[openGauss](https://opengauss.org/zh/)数据库。本工作结点的实时运行状态数据，包括CPU，内存，网络，IO，GPU等，会以固定的时间间隔存到数据库中。
 
 借助[grafana](https://grafana.com/)，可以为用户提供美观的前端仪表盘。每个工作结点上的grafana会连接到本结点的数据库，执行查询操作，并绘制图表展示实时运行数据。
+
+## 开发者
+
+<a href="https://github.com/SysuMatrixDL/">
+  <img src="https://contrib.rocks/image?repo=SysuMatrixDL/backend" />
+</a>
