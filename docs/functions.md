@@ -53,3 +53,30 @@
 用户从容器创建的镜像能够在此页面管理
 
 ![alt text](assets/functions/console2.png)
+
+## 容器交互
+
+在控制台的容器界面可以找到进入每个容器的入口
+
+### jupyter notebook
+
+复制容器密码，然后点击JupyterLab，为了安全性，jupyterLab需要输入密码才能访问。
+
+用户在jupyter上编写代码、运行代码、使用终端，例如下图，编写代码运行了diffusion模型推理，生成一张可爱的猫咪图片
+
+![alt text](assets/functions/jupyter.png)
+
+### tensorboard
+
+点击访问容器内的6006端口。这是Tensorboard的默认允许端口，如果您启动了tensorboard，可以看到下面的界面
+![alt text](assets/functions/tensorboard.png)
+
+### Grafana
+
+点击访问Grafana，访问用户友好的仪表盘，展示容器所在物理机的实时状态
+
+![alt text](assets/functions/grafana.png)
+
+### ssh
+
+在控制台复制ssh登录指令和密码，通过ssh连接到容器

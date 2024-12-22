@@ -1,401 +1,119 @@
-# 后端控制器
+# 容器镜像控制
 
-## 脚本列表
+控制器操作数据库和worker节点的工作流程被封装为一系列Python脚本
 
-返回的形式为json
+## 容器控制
 
-### 容器控制
+### 初始化容器
 
-cid是容器编号,iid是镜像编号，uid是用户编号
+| 脚本名称 | container_init.py            |
+| -------- | ----------------------------- |
+| 输入内容 | iid(镜像编号)，uid(用户编号)，name(容器名称)，cpu(容器CPU需求)，mem(容器内存需求)，gid(GPU编号，可选) |
 
-| container_status.py | 输入cid，返回容器状态 |
-| --- | --- |
-| container_start.py | 输入cid、启动容器，如果硬件不够，会返回启动失败 |
-| container_stop.py | 输入cid，停止容器 |
-| container_rm.py | 输入cid，删除容器 |
-| container_init.py | 输入iid、容器名、cpu内存配置、gpu编号，从镜像构建容器并启动，返回密码、端口等配置 |
-| get_properties.get_containers | 输入uid，返回用户的所有容器的cid |
 
-### 镜像控制
+1. 核验身份：查询数据库，确保镜像存在，并且用户有权限使用该镜像。如果没有相应的镜像记录，返回错误信息。
+2. 查询数据库，获取容器所使用的设备（`did`）的 IP 地址、CPU、内存及其他资源信息，并获取设备的相关目录路径（如数据目录、公共目录）。
+3. 查询数据库，获取该设备已运行容器所占用的 CPU 和内存资源，如果新容器所需资源加上现有资源超出设备总资源，则返回错误信息。
+4. 检查 GPU 可用性：如果容器请求使用 GPU，查询指定 GPU 是否已被其他容器占用。如果 GPU 不可用，则返回错误信息。
+5. 获取端口信息：通过执行远程脚本获取容器所需的 SSH、Jupyter 和 TensorBoard 端口。远程脚本会尝试绑定三个随机端口，如果成功绑定，就将端口号返回
+6. 生成16位的随机密码，作为容器的ssh和jupyter登录密码
+7. 启动容器：构造并执行 Docker 命令，通过 SSH 启动容器，并映射资源（如挂载卷、暴露端口等）。
+8. 更新 `containers` 表，记录新容器的状态（`running`）、资源配置、端口和密码。
+9. 如果容器使用了 GPU，更新 `container_gpu` 表，标记该 GPU 已被容器使用。
+10. 返回结果：如果容器启动成功，返回容器的随机密码、SSH 端口、Jupyter 端口和 TensorBoard 端口信息。
 
-cid是容器编号,iid是镜像编号，uid是用户编号
 
-| image_create.py | 输入uid和cid，保存容器为镜像 |
-| --- | --- |
-| image_rm.py | 输入uid和iid，销毁用户镜像 |
-| get_properties.get_device_images | 输入did，输出这台设备上的所有镜像和所有者 |
-| get_properties.get_user_images | 输入uid，返回用户创建的所有镜像的iid |
+### 查询容器状态
 
-### 设备控制
+| 脚本名称 | container_status.py          |
+| -------- | ---------------------------- |
+| 输入内容 | cid(容器编号)，uid(用户编号) |
 
-cid是容器编号,iid是镜像编号,gid是gpu编号,did是设备编号，uid是用户编号
 
-| get_properties.device_property | 输入did，获取当前设备cpu、cpu分配量、型号、内存、内存分配量、gpu、gpu分配量、所有可用镜像 |
-| --- | --- |
-| get_devices.py | 获取当前所有设备的did |
-|  |  |
 
-## RESTful API
+1. 查询数据库，验证容器是否属于用户，以及容器是否存在
+2. 查询数据库中旧的容器状态
+3. 查询数据库获取容器所在worker的ip，用于启动ssh控制连接
+4. ssh连接到容器所在worker，执行查询容器状态的指令
+5. 比较新旧状态，如果不同，则更新数据库中的容器状态
 
-### 登录&注册
+### 启动容器
 
-登录利用用户名和密码。登录成功后会设置 cookies 字段 `username` 和 `user_token`。在不退出登录的情况下，利用 cookies 进行鉴权。规定 `user_token` 不为空时，用户是登入的。
+| 脚本名称 | container_start.py           |
+| -------- | ---------------------------- |
+| 输入内容 | cid(容器编号)，uid(用户编号) |
 
-```shell
-curl -X POST http://127.0.0.1:5000/api/login \
--H "Content-Type: application/json" \
--d '{"username": "admin", "password": "114514"}'
 
-curl -X POST http://127.0.0.1:5000/api/register \
--H "Content-Type: application/json" \
--d '{"username": "admin", "password": "114514","email":"admic@matrix.com"}'
-// response with http-header: Set-Cookie
-```
+1. 验证用户身份：查询数据库，验证指定容器是否属于用户，以及容器是否存在。
+2. 检查容器状态：调用 `container_status` 函数查询容器当前的状态。如果容器已经在运行，直接返回错误信息，表示容器已经启动。
+3. 获取容器资源信息：查询数据库，获取容器的 CPU 和内存需求。
+4. 获取设备资源信息：查询容器所在设备的资源情况（如 CPU、内存等）以及已分配的资源。
+5. 检查资源是否足够：计算当前设备已使用的 CPU 和内存，并与设备的总资源进行比较。如果容器需求超出设备剩余资源，返回错误信息。
+6. 检查 GPU 可用性：查询容器是否使用 GPU，如果有 GPU 使用需求，则检查该 GPU 是否已被其他容器占用。如果 GPU 不可用，返回错误信息。
+7. 启动容器：通过 SSH 连接到容器所在的设备，并执行 Docker 启动命令来启动容器。
+8. 更新容器状态：如果容器启动成功，更新数据库中容器的状态为 "running"。
+9. 更新 GPU 使用情况：如果容器分配了 GPU，则更新数据库中 `container_gpu` 表的状态，标记该 GPU 为正在使用。
 
-### 登出
+### 停止容器
 
-不需要在消息体里面发送东西，后端会读取 cookies 中的字段查找相应的表项，更新状态。规定 `user_token` 为空时，用户是登出的。
+| 脚本名称 | container_stop.py           |
+| -------- | ---------------------------- |
+| 输入内容 | cid(容器编号)，uid(用户编号，可选) |
 
-```json
-curl -X POST http://127.0.0.1:5000/api/logout \
--b cookies.txt
-```
 
-### 查看所有containers
 
-get_properties.get_containers
+1. 查询数据库，验证指定容器是否属于该用户，确保容器存在且用户有权限访问该容器。
+2. 获取容器当前状态，如果容器已经停止（`exited`），直接返回错误信息，表示容器已处于停止状态。
+3. 获取容器 GPU 信息：查询数据库获取容器是否分配了 GPU。如果容器有 GPU 资源，记录该 GPU ID。
+4. 查询容器所在设备的 IP 地址，以便通过 SSH 连接到该设备。
+5. 停止容器：通过 SSH 命令执行 `docker stop` 来停止容器。
+6. 更新容器状态：如果容器成功停止，更新数据库中容器的状态为 "exited"。
+7. 更新 GPU 使用情况：如果容器分配了 GPU，则更新数据库中 `container_gpu` 表，标记该 GPU 为未使用状态。
+### 删除容器
 
-```sql
-curl -X GET http://127.0.0.1:5000/containers -b cookies.txt
-```
+| 脚本名称 | container_rm.py            |
+| -------- | --------------------------- |
+| 输入内容 | cid(容器编号)，uid(用户编号) |
 
-返回当前用户的所有容器的cid，示例：
 
-```json
-{
-	"cid": [1, 2, 3]
-}
-```
 
-### 创建container
+1. 验证用户身份：查询数据库，验证容器是否属于指定用户，并且容器是否存在。确保用户有权限删除该容器。
+2. 获取容器当前状态：获取容器当前状态。如果容器正在运行，先调用 `container_stop` 函数停止容器。
+3. 查询容器所在设备的 IP 地址，通过 SSH 连接到该设备，执行删除操作。
+4. 更新数据库，删除 `containers` 表中的容器记录。
 
-container_init.py
 
-```json
-curl -X POST http://127.0.0.1:5000/containers \
-     -H "Content-Type: application/json" \
-     -d '{"iid": 1, "name": "container_name", "cpu": 2, "mem": 2048, "gid": 1}' \
-     -b cookies.txt
-```
+## 镜像控制
 
-返回：
+### 创建镜像
 
-```json
-{
-	"status": 0, // 0表示成功
-	"passwd": "n8OMvBQeVfYmgiun",
-	"portssh": 6264, 
-	"portjupyter": 7451, 
-	"porttsb": 7491
-}
-```
+| 脚本名称 | image_create.py              |
+| -------- | ---------------------------- |
+| 输入内容 | cid(容器编号)，name(镜像名称)，uid(用户编号)，public(是否公开) |
 
-或者
 
-```json
-{
-	"status": -1,
-	"error": "报错信息"
-}
-```
 
-报错信息包括：
-
-- 'no image or not authorized to visit image’
-- 'cpu or memory not enough’
-- 'gpu {gid} not available’
-- 'docker run failed’
-
-### 启动container
-
-container_start.py
-
-启动cid=1的容器
-
-```json
-curl -X PUT http://127.0.0.1:5000/containers/1 \
-     -H "Content-Type: application/json" \
-     -d '{"cmd": "start", "gid": 1}' \
-     -b cookies.txt
-```
-
-返回
-
-```json
-{
-	"status": 0, // 0表示成功
-}
-```
-
-或者
-
-```json
-{
-	"status": -1,
-	"error": "报错信息"
-}
-```
-
-报错信息包括
-
-- 'no container or not authorized to visit’
-- 'container already running’
-- "no container or not authorized to visit"
-- 'cpu or memory not enough’
-- 'gpu {gid} not available’
-
-### 查看container状态
-
-container_status.py
-
-查看cid=1的容器状态
-
-```json
-curl -X GET http://127.0.0.1:5000/containers/1 \
-     -b cookies.txt
-```
-
-返回
-
-```json
-{
-	"status": 0, // 0表示成功
-	"result": "running" / "stopped"
-}
-```
-
-或者
-
-```json
-{
-	"status": -1,
-	"error": "no container or not authorized to visit"
-}
-```
-
-### 停止container
-
-container_stop.py
-
-停止cid=1的容器
-
-```json
-curl -X PUT http://127.0.0.1:5000/containers/1 \
-     -H "Content-Type: application/json" \
-     -d '{"cmd": "stop"}' \
-     -b cookies.txt
-```
-
-返回
-
-```json
-{
-	"status": 0, // 0表示成功
-}
-```
-
-或者
-
-```json
-{
-	"status": -1,
-	"error": "报错信息"
-}
-```
-
-报错信息包括
-
-- "no container or not authorized to visit"
-- 'container already stopped’
-
-### 删除container
-
-container_rm.py
-
-删除cid=1的容器
-
-```json
-curl -X DELETE http://127.0.0.1:5000/containers/1 \
-     -b cookies.txt
-```
-
-返回
-
-```json
-{
-	"status": 0, // 0表示成功
-}
-```
-
-或者
-
-```json
-{
-	"status": -1,
-	"error": "报错信息"
-}
-```
-
-报错信息包括
-
-- 'no container or not authorized to visit’
-
-### 查看所有设备
-
-get_devices.py
-
-```sql
-curl -X GET http://127.0.0.1:5000/devices \
-     -b cookies.txt
-```
-
-返回所有设备的did，示例：
-
-```json
-{
-	"cid": [1, 2, 3]
-}
-```
-
-### 获取设备属性
-
-查询did=1的设备的属性
-
-```json
-curl -X GET http://127.0.0.1:5000/devices/1 \
-     -b cookies.txt
-```
-
-返回设备属性，示例：
-
-```json
-{
-	"total_cpu" :  26,
-	"used_cpu" :  2,
-	"cpu_name" :  "Intel(R) Core(TM) i7-14700K",
-	"total_memory" :  24576,
-	"used_memory" :  2048,
-	"gpus" :  [
-							{"gid": 1, "name": "RTX4060 Ti 16GB"}
-						],
-	"gpu_used" :  [1],
-	"images" :  [
-								{"iid": 1, "User": "public"},
-								{"iid": 2, "User": "CJL"}
-							],
-}
-```
-
-images.User如果为public，代表镜像是公有的，不属于某个用户
-
-### 获取用户自己创建的镜像
-
-```json
-curl -X GET http://127.0.0.1:5000/images \
-     -b cookies.txt
-```
-
-返回示例
-
-```json
-{
-	"iid": [2, 3]
-}
-```
-
-这里返回的只是用户自己的镜像，不包括公有镜像
-
-### 获取指定镜像的信息
-
-获取iid=1的镜像信息
-
-```json
-curl -X GET http://127.0.0.1:5000/images/1 \
-     -b cookies.txt
-```
-
-返回示例
-
-```json
-{
-	"iid": 1, 
-	"did": 1, 
-	"name": "pytorch2.4.0-cuda11.8-cudnn9", 
-	"user": "public"
-}
-```
-
-user处为用户名，当镜像不属于某个用户时，填public
-
-### 从容器创建镜像
-
-从cid=1的容器创建镜像
-
-```json
-curl -X POST http://127.0.0.1:5000/images \
-     -H "Content-Type: application/json" \
-     -d '{"cid": 1, "name": "my_image"}' \
-     -b cookies.txt
-```
-
-返回
-
-```json
-{
-	"status": 0, // 0表示成功
-}
-```
-
-或者
-
-```json
-{
-	"status": -1,
-	"error": "报错信息"
-}
-```
-
-报错信息包括
-
-- 'no container or not authorized to visit’
+1. 查询数据库，确认用户是否有权限访问指定的容器。如果用户没有访问权限或容器不存在，则返回错误信息。
+2. 获取设备信息：查询数据库，获取容器所属设备的 `did` 和设备的 IP 地址，用于后续通过 SSH 连接到设备。
+3. 容器转镜像：使用 `docker commit` 命令通过 SSH 连接到设备，创建一个新的镜像。镜像的 ID 会通过命令的标准输出返回，并从输出中提取出镜像的 `real_id`（SHA256 哈希）。
+4. 从数据库获取一个新的镜像 ID (`iid`)，该 ID 是数据库中 `images` 表的下一个可用 ID。
+5. 再次SSH 连接到设备，获取刚刚创建的镜像的大小。
+6. 在 `images` 表中插入新镜像的记录，包括镜像的 `iid`、所属设备 `did`、镜像名称、`real_id`、是否公开和镜像大小。
+7. 在 `user_images` 表中插入记录，表示用户拥有该镜像。
 
 ### 删除镜像
 
-删除iid=2的镜像
+| 脚本名称 | image_rm.py               |
+| -------- | ------------------------- |
+| 输入内容 | iid(镜像ID)，uid(用户ID)  |
 
-```json
-curl -X DELETE http://127.0.0.1:5000/images/2 \
-     -b cookies.txt
-```
+实现细节如下：
 
-返回
+1. 查询数据库 `user_images` 表，验证用户是否拥有该镜像。如果用户没有访问权限或者镜像不存在，返回错误信息。
+2. 验证镜像是否关联容器：通过查询 `containers` 表，检查是否有容器依赖于该镜像。如果存在依赖的容器，则无法删除镜像，返回错误信息。
+3. 获取设备IP：通过查询 `images` 表，找到该镜像所在设备的 IP 地址。镜像对应的设备是通过 `did` 关联的。
+4. 获取镜像真实ID：查询 `images` 表，获取该镜像的真实 ID（`real_id`），这是 Docker 用来标识镜像的实际哈希值。
+5. 删除镜像：使用 `docker rmi` 命令通过 SSH 连接到设备，删除指定的镜像
+6. 从 `images` 表中删除该镜像记录。
+7. 从 `user_images` 表中删除用户与该镜像的关联记录。
 
-```json
-{
-	"status": 0, // 0表示成功
-}
-```
-
-或者
-
-```json
-{
-	"status": -1,
-	"error": "报错信息"
-}
-```
-
-报错信息包括
-
-- 'no image or not authorized to remove’
-- 'some containers is based on the image, unable to remove image’

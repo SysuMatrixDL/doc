@@ -43,6 +43,7 @@ nav:
     - 前端: dev/frontend.md
     - 后端: dev/backend.md
   - 细节:
-    - details/index.md
+    - 容器镜像控制: details/index.md
+    - RestfulAPI: details/restful.md
 
 
