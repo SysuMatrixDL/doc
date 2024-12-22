@@ -1,7 +1,7 @@
 
 本项目使用[open-gauss](https://opengauss.org/zh/)作为数据库
 
-## 数据库部署
+# 数据库部署
 
 采用docker部署open-gauss数据库，参考 [https://github.com/xy3xy3/openeuler-openGauss-docker-forstudy](https://github.com/xy3xy3/openeuler-openGauss-docker-forstudy)
 
@@ -21,7 +21,7 @@ docker run -d \
     xy3666/opengauss:6.0.0-openEuler
 ```
 
-## python api
+# python api
 
 python后端程序通过opengauss的python api连接到数据库，完成增删改查操作
 
@@ -90,13 +90,13 @@ res = db.exec(cmd)
 print(res)
 ```
 
-## 控制器数据库
+# 控制器数据库
 
 控制器上的数据库需要管理整个系统运行的必要数据，E-R图如下
 
 ![alt text](assets/db/controller.png)
 
-### User 表
+## User 表
 
 用于存储用户的基本信息，包括用户名、邮箱、密码等，同时包含用户的访问令牌和使用时长信息
 
@@ -111,7 +111,7 @@ print(res)
 
 ---
 
-### gpu 表
+## gpu 表
 
 用于记录GPU设备的基本信息，包括GPU的唯一标识和型号。
 
@@ -122,7 +122,7 @@ print(res)
 
 ---
 
-### device 表
+## device 表
 
 用于存储worker结点的信息，包括设备ID、IP地址、CPU核心数量、CPU型号、内存大小以及数据盘和公共数据的路径。
 
@@ -140,7 +140,7 @@ print(res)
 
 ---
 
-### gpu_device 表
+## gpu_device 表
 
 用于关联GPU和设备的关系，表示某GPU属于某设备。
 
@@ -151,7 +151,7 @@ print(res)
 
 ---
 
-### images 表
+## images 表
 
 用于管理设备上的镜像信息，包括镜像的名称、实际ID、所属设备，以及是否公开的标志。
 
@@ -165,7 +165,7 @@ print(res)
 
 ---
 
-### user_images 表
+## user_images 表
 
 用于记录用户和镜像之间的关联关系，表示用户对哪些镜像有控制权限（用于删除镜像）。
 
@@ -176,7 +176,7 @@ print(res)
 
 ---
 
-### containers 表
+## containers 表
 
 用于管理容器的信息，包括容器的所属用户、使用的镜像、分配的资源（CPU和内存）、映射的端口、访问密码以及容器的运行状态。
 
@@ -196,7 +196,7 @@ print(res)
 
 ---
 
-### container_gpu 表
+## container_gpu 表
 
 用于记录容器和GPU之间的映射关系，标明某个容器使用了哪些GPU及是否正在被使用。
 
@@ -206,11 +206,11 @@ print(res)
 | gid    | int(外键)    | GPU ID           |
 | used   | int NOT NULL | 是否正在被使用    |
 
-## 工作结点数据库
+# 工作结点数据库
 
 每个工作结点上都部署有open-gauss数据库，用于记录该节点的实时资源使用状态
 
-### gauge 表
+## gauge 表
 
 用于记录设备的综合监控指标，包括CPU、内存、GPU负载及GPU内存的使用情况。
 
@@ -224,7 +224,7 @@ print(res)
 
 ---
 
-### memory 表
+## memory 表
 用于记录设备内存的总量和使用情况。
 
 | 属性名    | 类型          | 解释               |
@@ -235,7 +235,7 @@ print(res)
 
 ---
 
-### gpumem 表
+## gpumem 表
 用于记录GPU内存的总量和使用情况。
 
 | 属性名    | 类型          | 解释               |
@@ -246,7 +246,7 @@ print(res)
 
 ---
 
-### diskio 表
+## diskio 表
 用于记录设备磁盘的IO性能，包括读写速率。
 
 | 属性名    | 类型          | 解释               |
@@ -257,7 +257,7 @@ print(res)
 
 ---
 
-### netio 表
+## netio 表
 用于记录设备的网络IO性能，包括发送和接收速率。
 
 | 属性名    | 类型          | 解释               |
