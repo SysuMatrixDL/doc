@@ -4,9 +4,9 @@
 
 ![banner](assets/index/banner.png)
 
-SysuMatrixDL (Sysu Matrix Deep Learning) 是一个分布式算力市场平台
+MatrixDL (Matrix Deep Learning) 是一个算力市场平台，帮助管理本地私有服务器集群，并以容器化的方式来为多用户提供计算服务
 
-为什么要开发这个项目？ <del>为了提交数据库大作业，</del> 考虑到当下GPU算力在人工智能训练和推理中的作用日益重要，已经成为广大学生的刚需，本项目的灵感来自于GPU算力租用平台AutoDL，旨在给中大学生提供CPU/GPU算力(免费)租用服务。
+本项目的灵感主要来源于[AutoDL算力云](https://www.autodl.com)，同时也是数据库大作业作品
 
 MatrixDL致力于提供简单易用的云端算力，为用户的炼丹保驾护航：
 
@@ -14,7 +14,13 @@ MatrixDL致力于提供简单易用的云端算力，为用户的炼丹保驾护
 - 提供jupyter、ssh等多种容器访问方式
 - 支持tensorboard端口转发
 - 提供实时展示设备状态的grafana仪表盘
-- 容器间共享的常用数据集，如ImageNet, ucf101等
+- 容器间能够共享常用数据集，如ImageNet, ucf101等
+
+## 体验 MatrixDL
+
+您可以在线体验 MatrixDL 的功能
+
+借助cloudflare的内网穿透服务，可以在公网通过 [https://matrixdl.fuusen.space/](https://matrixdl.fuusen.space/) 访问MatrixDL界面，但是在MatrixDL上创建的容器实例只能在中大校园网内访问。
 
 ## 开源
 
@@ -42,11 +48,6 @@ MatrixDL完全开源，所有开发仓库位于 [SysuMatrixDL](https://github.co
 
 - ghcr.io/sysumatrixdl/grafana
 
-## 访问 MatrixDL
-
-借助cloudflare的内网穿透服务，可以通过 [https://matrixdl.fuusen.space/](https://matrixdl.fuusen.space/) 访问MatrixDL。
-
-cloudflare只能完成网页的内网穿透，在MatrixDL上创建的容器实例只能在中大校园网内访问，所以我们建议您在中大校园网内体验MatrixDL的全部功能
 
 ## 架构
 
@@ -77,3 +78,5 @@ MatrixDL由单个控制结点(controller)和多个工作结点(worker)组成，�
 <a href="https://github.com/SysuMatrixDL/">
   <img src="https://contrib.rocks/image?repo=SysuMatrixDL/backend" />
 </a>
+
+如果您对本项目有任何疑问，或者有部署需求，欢迎联系开发者：[2743880348@qq.com](mailto:2743880348@qq.com)
