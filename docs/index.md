@@ -16,11 +16,10 @@ MatrixDL致力于提供简单易用的云端算力，为用户的炼丹保驾护
 - 提供实时展示设备状态的grafana仪表盘
 - 容器间能够共享常用数据集，如ImageNet, ucf101等
 
-## 体验 MatrixDL
+## 视频demo
 
-您可以在线体验 MatrixDL 的功能
+<iframe src="//player.bilibili.com/player.html?isOutside=true&aid=114353437152538&bvid=BV12j5vzbEWW&cid=29467738121&p=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"></iframe>
 
-借助cloudflare的内网穿透服务，可以在公网通过 [https://matrixdl.fuusen.space/](https://matrixdl.fuusen.space/) 访问MatrixDL界面，但是在MatrixDL上创建的容器实例只能在中大校园网内访问。
 
 ## 开源
 
